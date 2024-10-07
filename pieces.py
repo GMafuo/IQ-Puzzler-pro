@@ -13,50 +13,6 @@ StoneColor = Literal[
 
 EMPTY:StoneColor = "empty"
 
-
-# Default orientation:
-#
-# green: GGG
-#         G
-#
-# pink:  ppp
-#       pp
-#
-# yellow: yyyy
-#           y
-#
-# violet:   v
-#          vv
-#         vv
-#
-# lightred: rrrr
-#              r
-#
-# red: R
-#      RR
-#       R
-#
-# orange: oo
-#          oo
-#          o
-#
-# blue: B
-#       BBB
-#
-# lightblue: bbb
-#              b
-#              b
-#
-# cyan:  c
-#       cc
-#
-# lightgreen: g g
-#             ggg
-#
-# lime:  l
-#       ll
-#       ll
-
 STONES: dict[StoneColor, StoneShape] = {
     "green": ((0, 0), (1, 0), (1, 1), (2, 0)),
     "pink": ((0,0), (0,1),(1,1), (0,2), (1,2)),
