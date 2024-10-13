@@ -14,52 +14,9 @@ StoneColor = Literal[
 EMPTY:StoneColor = "empty"
 
 
-# Default orientation:
-#
-# green: GGG
-#         G
-#
-# pink:  ppp
-#       pp
-#
-# yellow: yyyy
-#           y
-#
-# violet:   v
-#          vv
-#         vv
-#
-# lightred: rrrr
-#              r
-#
-# red: R
-#      RR
-#       R
-#
-# orange: oo
-#          oo
-#          o
-#
-# blue: B
-#       BBB
-#
-# lightblue: bbb
-#              b
-#              b
-#
-# cyan:  c
-#       cc
-#
-# lightgreen: g g
-#             ggg
-#
-# lime:  l
-#       ll
-#       ll
-
 STONES: dict[StoneColor, StoneShape] = {
     "green": ((0, 0), (1, 0), (1, 1), (2, 0)),
-    "pink": ((0,0), (0,1),(1,1), (0,2), (1,2)),
+    "pink": ((0,0), (1,0),(1,-1), (2,-1), (3,-1)),
     "yellow": ((0, 0), (1, 0), (2, 0), (2, 1), (3, 0)),
     "violet": ((0, 0), (1, 0), (1, -1), (2, -1), (2, -2)),
     "lightred": ((0, 0), (0, 1), (0, 2), (0, 3), (1, 3)),
@@ -71,22 +28,6 @@ STONES: dict[StoneColor, StoneShape] = {
     "lightgreen": ((0, 0), (0, 1), (1, 1), (2, 1), (2, 0)),
     "lime": ((0, 0), (0, 1), (1, -1), (1, 0), (1, 1)),
 }
-
-
-# STONES: dict[StoneColor, StoneShape] = {
-#     "lightblue": ((0, 0), (1, 0), (1, -1)),
-#     "orange": ((0, 0),(0,-1), (1, -1), (2, -1), (1,-2)),
-#     "green": ((0, 0),(0,-1), (1, -1), (2, -1), (2,0)),
-#     "light_red": ((0, 0),(0,1),(1,1), (2, 1), (3,1)),
-#     "dark_blue": ((0, 0),(0,1),(1,1), (2, 1)),
-#     "violet": ((0,0), (0,1), (1,1), (1,2), (2,2)),
-#     "red": ((0,0), (1,0), (1,1), (2,1)),
-#     "turquoise": ((0,0), (0,1), (0,2), (1,1), (1,2)),
-#     "yellow": ((0,0), (1,0), (2,0), (3,0), (1,1)),
-#     "lime": ((0,0), (1,0), (1, -1), (1,1)),
-#     "blue": ((0,0), (1,0), (2,0), (2,-1),(2,-2)),
-#     "pink": ((0,0), (1,0), (1, -1), (0,1),(0,2))
-# }
 
 STONE_SIZES: dict[StoneColor, int] = {
     color: len(STONES[color]) for color in STONES
