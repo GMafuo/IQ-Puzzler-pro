@@ -13,7 +13,6 @@ StoneColor = Literal[
 
 EMPTY:StoneColor = "empty"
 
-
 STONES: dict[StoneColor, StoneShape] = {
     "green": ((0, 0), (1, 0), (1, 1), (2, 0)),
     "pink": ((0,0), (1,0),(1,-1), (2,-1), (3,-1)),
