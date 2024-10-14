@@ -25,12 +25,30 @@ class IqSolver2d(IqSolverBase):
             for rotation in (1, -1)
         )
 
+def choisir_difficulte():
+    options = {
+        "1": "Starter1",
+        "2": "Starter2",
+        "3": "Junior1",
+        "4": "Junior2",
+        "5": "Expert1",
+        "6": "Expert2",
+        "7": "Master1",
+        "8": "Master2"
+    }
+    print("Choisissez la difficulté :")
+    for key, value in options.items():
+        print(f"{key} : {value}")
+    
+    choix = input("Entrez le numéro de votre choix : ")
+    return options.get(choix, "Starter1")  
 
-GAME: int = "Expert1"
+GAME = choisir_difficulte()
 TEST = False
 
-solver = IqSolver2d(file_name_color=f"{__file__}.{GAME}.solution-color.txt",
-                    file_name_text=f"{__file__}.{GAME}.solution.txt")
+solver = IqSolver2d(
+    file_name_text=f"{__file__}.{GAME}.solution.txt"
+)
 
 
 def placer_pierre(color: StoneColor, direction: tuple[DirectionOrientation, DirectionRotation], depart: tuple[int, int]):
@@ -82,12 +100,21 @@ elif GAME == "Expert1" :
     placer_pierre("blue", (0, -1), (1, 3))
     placer_pierre("green", (1, 1), (4, 0))
     placer_pierre("lime", (1, 1), (4, 3))
-
-
-
-
-
-
+elif GAME == "Expert2" : 
+    placer_pierre("cyan", (3, 1), (3, 1))
+    placer_pierre("violet", (3, -1), (5, 2))
+    placer_pierre("pink", (0, 1), (7, 1))
+    placer_pierre("orange", (2, -1), (10, 1))
+    placer_pierre("blue", (3, 1), (9, 4))
+    placer_pierre("lightred", (0, -1), (4,3))
+elif GAME == "Master1" :
+    placer_pierre("cyan", (3, 1), (10, 1))
+    placer_pierre("lime", (3, -1), (7, 1))
+    placer_pierre("green", (0, 1), (5, 2))
+elif GAME == "Master2" : 
+    placer_pierre("cyan", (3, 1), (7, 1))
+    placer_pierre("red", (3, 1), (5, 3))
+    placer_pierre("blue", (2, 1), (10, 1))
 
 if TEST:
     solver.print_board(no_dups=False)
@@ -97,3 +124,4 @@ else:
     solver.print_solutions()
     solver.afficher_plateau()
    
+
