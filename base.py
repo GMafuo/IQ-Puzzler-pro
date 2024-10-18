@@ -1,50 +1,48 @@
+from dataclasses import dataclass, field
+from typing import Callable, Literal, Tuple, List, Set, Dict
+from copy import deepcopy
 import os
 import re
-from typing import Callable, Literal, Tuple
-from copy import deepcopy
 
 from pieces import EMPTY, Piece_MARKER, Piece_SIZES, PieceS, PieceColor, PieceShape
 
-Coord = tuple[int, int, int]
-
-Plateau = list[list[list[PieceColor]]]
-
-DirectionLevel = Literal[-1, 0, 1]  
+Coord = Tuple[int, int, int]
+Plateau = List[List[List[PieceColor]]]
+DirectionLevel = Literal[-1, 0, 1]
 DirectionOrientation = Literal[0, 1, 2, 3]
-DirectionRotation = Literal[1, -1] 
-Direction = tuple[DirectionLevel, DirectionOrientation, DirectionRotation]
+DirectionRotation = Literal[1, -1]
+Direction = Tuple[DirectionLevel, DirectionOrientation, DirectionRotation]
 
-
+@dataclass
 class IqSolverBase:
-    def __init__(
-            self,
-            file_name_text: str | None = None,
-            afficher_tous_les_plateaux: bool = True,
-    ) -> None:
-        super().__init__()
-        self.file_name_text = file_name_text
-        self.afficher_tous_les_plateaux = afficher_tous_les_plateaux
+    file_name_text: str | None = None
+    afficher_tous_les_plateaux: bool = True
+    plateau: Plateau = field(init=False)
+    toutes_les_directions: Tuple[Direction, ...] = field(init=False)
+    plateaux_trouves: Set[str] = field(default_factory=set)
+    dernier_plateau: str | None = None
+    rotations_piece: Dict[PieceColor, Tuple[Tuple[Coord, ...], ...]] = field(init=False)
+    directions_piece: Dict[PieceColor, Tuple[Direction, ...]] = field(init=False)
+
+    def __post_init__(self):
         self.plateau = self._init_board()
-        self.toutes_les_directions: Tuple[Direction, ...] = self._initialiser_directions(
-        )
-        self.plateaux_trouves: set[str] = set()
+        self.toutes_les_directions = self._initialiser_directions()
         self._initialiser_directions_piece()
-        self.dernier_plateau: str | None = None
 
     def _cloner_plateau(self, plateau: Plateau) -> Plateau:
-         return deepcopy(plateau)
+        return deepcopy(plateau)
 
     def _initialiser_directions_piece(self):
-        self.rotations_piece: dict[PieceColor, Tuple[Tuple[Coord, ...], ...]] = {}
-        self.directions_piece: dict[PieceColor, Tuple[Direction, ...]] = {}
+        self.rotations_piece = {}
+        self.directions_piece = {}
         for couleur, piece in PieceS.items():
-            formes_normalisees: set[str] = set()
-            formes: list[Tuple[Coord, ...]] = []
-            directions: list[Direction] = []
+            formes_normalisees = set()
+            formes = []
+            directions = []
             for direction in self.toutes_les_directions:
                 forme = self.rotate_piece(piece=piece, direction=direction)
                 mins = tuple(min(p[i] for p in forme) for i in range(len(forme[0])))
-                forme_normalisee = ','.join(sorted(':'.join(str(c - m)for c, m in zip(p, mins))for p in forme))
+                forme_normalisee = ','.join(sorted(':'.join(str(c - m) for c, m in zip(p, mins)) for p in forme))
                 if forme_normalisee not in formes_normalisees:
                     formes.append(forme)
                     directions.append(direction)
@@ -53,8 +51,8 @@ class IqSolverBase:
             self.rotations_piece[couleur] = tuple(formes)
             self.directions_piece[couleur] = tuple(directions)
 
-    def _plateau_to_str(self, plateau: Plateau, index_marqueur: Literal[0, 1] = 0):
-        lines: List[List[str]] = [[] for _ in plateau[0]]
+    def _plateau_to_str(self, plateau: Plateau, index_marqueur: Literal[0, 1] = 0) -> str:
+        lines = [[] for _ in plateau[0]]
 
         def _map(couleur: PieceColor):
             return Piece_MARKER[couleur][index_marqueur]
@@ -68,14 +66,12 @@ class IqSolverBase:
     def sauvegarder_plateau(self, plateau: Plateau):
         plateau_str = self._plateau_to_str(plateau)
         self.plateaux_trouves.add(plateau_str)
-        # return
-        if self.file_name_text is not None:
+        if self.file_name_text:
             with open(self.file_name_text, mode="a", encoding='utf-8') as file:
-                file.write(
-                    f"{self._plateau_to_str(plateau=plateau, index_marqueur=1)}\n\n")
+                file.write(f"{self._plateau_to_str(plateau=plateau, index_marqueur=1)}\n\n")
 
     def charger_plateau(self):
-        if self.file_name_text is not None and os.path.isfile(self.file_name_text):
+        if self.file_name_text and os.path.isfile(self.file_name_text):
             with open(self.file_name_text, "r", encoding='utf-8') as file:
                 derniers_plateaux = [plateau for plateau in file.read().split('\n\n') if plateau]
                 if derniers_plateaux:
@@ -86,24 +82,22 @@ class IqSolverBase:
             plateau = self.plateau
         plateau_str = self._plateau_to_str(plateau)
         if sans_doublons and plateau_str in self.plateaux_trouves:
-            return None
+            return
 
         print(plateau_str)
         print()
 
-    def transformer(self, p: tuple[int, int], direction: Direction) -> Coord:
+    def transformer(self, p: Tuple[int, int], direction: Direction) -> Coord:
         niveau, orientation, rotation = direction
 
-        dx: Coord
-        dy: Coord
         if niveau == 1:
-            dx = ((0 if orientation in {0, 1} else -1), (0 if orientation in {0, 3} else -1))
+            dx = (0 if orientation in {0, 1} else -1, 0 if orientation in {0, 3} else -1)
             dy = (rotation * (-dx[0] - 1), rotation * (-dx[1] - 1))
         elif niveau == 0:
-            dx = ((1 if orientation == 0 else -1 if orientation == 2 else 0), (1 if orientation == 1 else -1 if orientation == 3 else 0))
+            dx = (1 if orientation == 0 else -1 if orientation == 2 else 0, 1 if orientation == 1 else -1 if orientation == 3 else 0)
             dy = (-dx[1] * rotation, dx[0] * rotation)
         else:
-            dx = ((1 if orientation in {0, 1} else 0), (1 if orientation in {0, 3} else 0))
+            dx = (1 if orientation in {0, 1} else 0, 1 if orientation in {0, 3} else 0)
             dy = (rotation * (dx[0] - 1), rotation * (dx[1] - 1))
 
         return (p[0] * dx[0] + p[1] * dy[0], p[0] * dx[1] + p[1] * dy[1])
@@ -111,35 +105,35 @@ class IqSolverBase:
     def appliquer_piece(self, piece: Tuple[Coord, ...], fn: Callable[[Coord], Coord]) -> Tuple[Coord, ...]:
         return tuple(fn(p) for p in piece)
 
-    def rotate_piece(self, piece: PieceShape, direction: Direction) -> Tuple[Tuple[int, int], ...]: 
+    def rotate_piece(self, piece: PieceShape, direction: Direction) -> Tuple[Tuple[int, int], ...]:
         return tuple(self.transformer(p, direction) for p in piece)
 
-    def verifier_coordonnees(self, plateau: Plateau, x: int, y: int) -> bool:  # Modifier la signature
-         return 0 <= y < len(plateau[0]) and 0 <= x < len(plateau[0][y])
+    def verifier_coordonnees(self, plateau: Plateau, x: int, y: int) -> bool:
+        return 0 <= y < len(plateau[0]) and 0 <= x < len(plateau[0][y])
 
     def _placer_piece(self, plateau: Plateau, couleur_piece: PieceColor, forme: Tuple[Coord, ...], depart: Coord) -> Plateau | None:
         forme = self.appliquer_piece(piece=forme, fn=lambda p: (p[0] + depart[0], p[1] + depart[1]))
         plateau = self._cloner_plateau(plateau)
 
-        for (x, y) in forme: 
-            if not self.verifier_coordonnees(plateau, x, y) or plateau[0][y][x] != EMPTY:  
+        for (x, y) in forme:
+            if not self.verifier_coordonnees(plateau, x, y) or plateau[0][y][x] != EMPTY:
                 return None
 
             plateau[0][y][x] = couleur_piece
 
         return plateau
 
-    def tester_plateau(self, plateau: Plateau, couleurs_restantes: list[PieceColor]) -> bool:
-        verifie: set[Coord] = set()
+    def tester_plateau(self, plateau: Plateau, couleurs_restantes: List[PieceColor]) -> bool:
+        verifie = set()
 
         taille_max = max(Piece_SIZES[couleur] for couleur in couleurs_restantes)
         taille_min = min(Piece_SIZES[couleur] for couleur in couleurs_restantes)
 
-        def test_xy(x: int, y: int) -> int:  
+        def test_xy(x: int, y: int) -> int:
             if (x, y) in verifie:
                 return 0
 
-            if not self.verifier_coordonnees(plateau, x, y):  
+            if not self.verifier_coordonnees(plateau, x, y):
                 return 0
 
             if plateau[0][y][x] != EMPTY:
@@ -151,8 +145,8 @@ class IqSolverBase:
                 resultat += test_xy(x + dx, y + dy)
             return resultat
 
-        tailles: set[int] = set()
-        for y, ligne in enumerate(plateau[0]): 
+        tailles = set()
+        for y, ligne in enumerate(plateau[0]):
             for x in range(len(ligne)):
                 if (x, y) in verifie:
                     continue
@@ -172,7 +166,7 @@ class IqSolverBase:
         vide = Piece_MARKER[EMPTY][1]
         return re.sub(r'[^' + vide + marqueur + r'\n ]', vide, plateau)
 
-    def placer_prochaine_piece(self, plateau: Plateau, couleurs: list[PieceColor]):
+    def placer_prochaine_piece(self, plateau: Plateau, couleurs: List[PieceColor]):
         couleur = couleurs[0]
         couleurs = couleurs[1:]
         derniere_piece = len(couleurs) == 0
@@ -181,11 +175,11 @@ class IqSolverBase:
             for y, ligne in enumerate(niveau):
                 for x in range(len(ligne)):
                     for forme in self.rotations_piece[couleur]:
-                        prochain_plateau: Plateau | None = self._placer_piece(plateau=plateau, couleur_piece=couleur, forme=forme, depart=(x, y, z))
+                        prochain_plateau = self._placer_piece(plateau=plateau, couleur_piece=couleur, forme=forme, depart=(x, y, z))
                         if prochain_plateau is None:
                             continue
                         if dernier_plateau_nettoye is not None:
-                            prochain_plateau_str: str | None = self._nettoyer_dernier_plateau(plateau=self._plateau_to_str(plateau=prochain_plateau, index_marqueur=1), couleur=couleur)
+                            prochain_plateau_str = self._nettoyer_dernier_plateau(self._plateau_to_str(prochain_plateau, index_marqueur=1), couleur)
                             if prochain_plateau_str == dernier_plateau_nettoye:
                                 dernier_plateau_nettoye = None
                                 if derniere_piece:
@@ -201,7 +195,6 @@ class IqSolverBase:
                         elif self.tester_plateau(prochain_plateau, couleurs):
                             self.placer_prochaine_piece(prochain_plateau, couleurs)
 
-
     def placer_piece(self, couleur: PieceColor, direction: Direction, depart: Coord):
         forme = self.rotate_piece(piece=PieceS[couleur], direction=direction)
         prochain_plateau = self._placer_piece(self.plateau, couleur, forme, depart)
@@ -210,13 +203,7 @@ class IqSolverBase:
         return prochain_plateau
 
     def resoudre(self):
-        couleurs_utilisees = set(
-            couleur
-            for niveau in self.plateau
-            for ligne in niveau
-            for couleur in ligne
-        )
-
+        couleurs_utilisees = {couleur for niveau in self.plateau for ligne in niveau for couleur in ligne}
         self.placer_prochaine_piece(plateau=self.plateau, couleurs=[c for c in PieceS if c not in couleurs_utilisees])
 
     def print_solutions(self):
