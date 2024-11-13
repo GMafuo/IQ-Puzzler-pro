@@ -3,17 +3,17 @@ from typing import Literal, Tuple
 from termcolor import colored
 
 
-StoneShape = Tuple[tuple[int, int], ...]
+PieceShape = Tuple[tuple[int, int], ...]
 
-StoneColor = Literal[
+PieceColor = Literal[
     "green", "pink", "yellow", "violet", "lightred",
     "red", "orange", "blue", "lightblue",
     "cyan", "lightgreen", "lime", "empty"
 ]
 
-EMPTY:StoneColor = "empty"
+EMPTY:PieceColor = "empty"
 
-STONES: dict[StoneColor, StoneShape] = {
+PieceS: dict[PieceColor, PieceShape] = {
     "green": ((0, 0), (1, 0), (1, 1), (2, 0)),
     "pink": ((0,0), (1,0),(1,-1), (2,-1), (3,-1)),
     "yellow": ((0, 0), (1, 0), (2, 0), (2, 1), (3, 0)),
@@ -28,8 +28,8 @@ STONES: dict[StoneColor, StoneShape] = {
     "lime": ((0, 0), (0, 1), (1, -1), (1, 0), (1, 1)),
 }
 
-STONE_SIZES: dict[StoneColor, int] = {
-    color: len(STONES[color]) for color in STONES
+Piece_SIZES: dict[PieceColor, int] = {
+    color: len(PieceS[color]) for color in PieceS
 }
 
 symbol = "🟔"
@@ -37,7 +37,7 @@ symbol = "🟔"
 def color(color: str, marker: str):
     return (colored(text=marker, color=color, force_color=True), marker)
 
-STONE_MARKER: dict[StoneColor, tuple[str, str]] = {
+Piece_MARKER: dict[PieceColor, tuple[str, str]] = {
     "green": color(color='green', marker='G'),
     "pink": color(color="light_magenta", marker='p'),
     "yellow": color(color="yellow", marker='y'),
