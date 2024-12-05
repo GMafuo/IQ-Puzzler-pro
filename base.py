@@ -30,6 +30,7 @@ class IqSolverBase:
         self.plateaux_trouves: set[str] = set()
         self._initialiser_directions_piece()
         self.dernier_plateau: str | None = None
+        self.solution_trouvee = False
 
     def _cloner_plateau(self, plateau: Plateau) -> Plateau:
          return deepcopy(plateau)
@@ -114,7 +115,7 @@ class IqSolverBase:
     def rotate_piece(self, piece: PieceShape, direction: Direction) -> Tuple[Tuple[int, int], ...]: 
         return tuple(self.transformer(p, direction) for p in piece)
 
-    def verifier_coordonnees(self, plateau: Plateau, x: int, y: int) -> bool:  # Modifier la signature
+    def verifier_coordonnees(self, plateau: Plateau, x: int, y: int) -> bool:  
          return 0 <= y < len(plateau[0]) and 0 <= x < len(plateau[0][y])
 
     def _placer_piece(self, plateau: Plateau, couleur_piece: PieceColor, forme: Tuple[Coord, ...], depart: Coord) -> Plateau | None:
@@ -185,8 +186,13 @@ class IqSolverBase:
                 self.afficher_plateau(prochain_plateau)
             if derniere_piece:
                 self.sauvegarder_plateau(prochain_plateau)
+                if EMPTY not in [case for ligne in prochain_plateau[0] for case in ligne]:
+                    self.solution_trouvee = True
+                    return True
             elif self.tester_plateau(prochain_plateau, couleurs):
                 self.placer_prochaine_piece(prochain_plateau, couleurs)
+                if hasattr(self, 'solution_trouvee') and self.solution_trouvee:
+                    return True
             return True
 
         couleur = couleurs[0]
@@ -199,15 +205,8 @@ class IqSolverBase:
                 for x in range(len(ligne)):
                     for forme in self.rotations_piece[couleur]:
                         if essayer_placer_forme(couleur, forme, x, y, z):
-                            prochain_plateau = self._placer_piece(plateau=plateau, couleur_piece=couleur, forme=forme, depart=(x, y, z))
-                            if prochain_plateau is not None:
-                                if dernier_plateau_nettoye is not None:
-                                    dernier_plateau_nettoye = None
-                                    if derniere_piece:
-                                        self.dernier_plateau = None
-                                        self.afficher_plateau(prochain_plateau)
-                                    else:
-                                        self.placer_prochaine_piece(prochain_plateau, couleurs)
+                            if hasattr(self, 'solution_trouvee') and self.solution_trouvee:
+                                return
 
     def placer_piece(self, couleur: PieceColor, direction: Direction, depart: Coord):
         forme = self.rotate_piece(piece=PieceS[couleur], direction=direction)
@@ -225,7 +224,7 @@ class IqSolverBase:
         )
 
         self.placer_prochaine_piece(plateau=self.plateau, couleurs=[c for c in PieceS if c not in couleurs_utilisees])
-
+        
     def print_solutions(self):
         for b in self.plateaux_trouves:
             print(b)
