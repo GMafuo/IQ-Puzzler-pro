@@ -9,7 +9,9 @@ BOARD_WIDTH = 11
 BOARD_HEIGHT = 5
 
 class IqSolver2d(IqSolverBase):
+    
     def _init_board(self) -> Plateau:
+        """Initialise un plateau vide aux dimensions standard"""
         return [
             [
                 [EMPTY for _ in range(BOARD_WIDTH)]

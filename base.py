@@ -5,17 +5,19 @@ from copy import deepcopy
 
 from pieces import EMPTY, Piece_MARKER, Piece_SIZES, PieceS, PieceColor, PieceShape
 
-Coord = tuple[int, int, int]
+Coord = tuple[int, int, int]  # Coordonnées (x, y, z)
+Plateau = list[list[list[PieceColor]]]  # Structure du plateau de jeu
 
-Plateau = list[list[list[PieceColor]]]
-
-DirectionLevel = Literal[-1, 0, 1]  
-DirectionOrientation = Literal[0, 1, 2, 3]
-DirectionRotation = Literal[1, -1] 
+DirectionLevel = Literal[-1, 0, 1]  # Niveau vertical
+DirectionOrientation = Literal[0, 1, 2, 3]  # Orientation horizontale (0-3)
+DirectionRotation = Literal[1, -1]  # Sens de rotation
 Direction = tuple[DirectionLevel, DirectionOrientation, DirectionRotation]
 
 
 class IqSolverBase:
+    """Classe de base pour résoudre le puzzle IQ.
+    Implémente les fonctionnalités principales de manipulation du plateau et des pièces."""
+    
     def __init__(
             self,
             file_name_text: str | None = None,
@@ -36,6 +38,10 @@ class IqSolverBase:
          return deepcopy(plateau)
 
     def _initialiser_directions_piece(self):
+        """Initialise toutes les rotations possibles pour chaque pièce.
+        Stocke les résultats dans:
+        - self.rotations_piece : formes possibles pour chaque pièce
+        - self.directions_piece : directions correspondantes"""
         self.rotations_piece: dict[PieceColor, Tuple[Tuple[Coord, ...], ...]] = {}
         self.directions_piece: dict[PieceColor, Tuple[Direction, ...]] = {}
         for couleur, piece in PieceS.items():
@@ -93,6 +99,12 @@ class IqSolverBase:
         print()
 
     def transformer(self, p: tuple[int, int], direction: Direction) -> Coord:
+        """Applique une transformation (rotation/translation) à un point.
+        Args:
+            p: Point à transformer
+            direction: Direction de transformation
+        Returns:
+            Nouvelles coordonnées du point"""
         niveau, orientation, rotation = direction
 
         dx: Coord
@@ -131,6 +143,7 @@ class IqSolverBase:
         return plateau
 
     def tester_plateau(self, plateau: Plateau, couleurs_restantes: list[PieceColor]) -> bool:
+        """Vérifie si le plateau actuel permet encore de placer les pièces restantes."""
         verifie: set[Coord] = set()
 
         taille_max = max(Piece_SIZES[couleur] for couleur in couleurs_restantes)

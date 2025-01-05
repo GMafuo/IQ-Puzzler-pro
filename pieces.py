@@ -3,8 +3,8 @@ from typing import Literal, Tuple
 from termcolor import colored
 
 
-PieceShape = Tuple[tuple[int, int], ...]
-
+# Définition des types et formes des pièces
+PieceShape = Tuple[tuple[int, int], ...]  # Forme d'une pièce comme suite de coordonnées
 PieceColor = Literal[
     "green", "pink", "yellow", "violet", "lightred",
     "red", "orange", "blue", "lightblue",
@@ -13,9 +13,10 @@ PieceColor = Literal[
 
 EMPTY:PieceColor = "empty"
 
+# Dictionnaire des formes de pièces
 PieceS: dict[PieceColor, PieceShape] = {
-    "green": ((0, 0), (1, 0), (1, 1), (2, 0)),
-    "pink": ((0,0), (1,0),(1,-1), (2,-1), (3,-1)),
+    "green": ((0, 0), (1, 0), (1, 1), (2, 0)),  
+    "pink": ((0,0), (1,0),(1,-1), (2,-1), (3,-1)),  
     "yellow": ((0, 0), (1, 0), (2, 0), (2, 1), (3, 0)),
     "violet": ((0, 0), (1, 0), (1, -1), (2, -1), (2, -2)),
     "lightred": ((0, 0), (0, 1), (0, 2), (0, 3), (1, 3)),
@@ -37,6 +38,7 @@ symbol = "🟔"
 def color(color: str, marker: str):
     return (colored(text=marker, color=color, force_color=True), marker)
 
+# Marqueurs pour l'affichage des pièces
 Piece_MARKER: dict[PieceColor, tuple[str, str]] = {
     "green": color(color='green', marker='G'),
     "pink": color(color="light_magenta", marker='p'),
